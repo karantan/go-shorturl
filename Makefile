@@ -5,6 +5,11 @@
 run:
 	@go run main.go
 
+# Run tests
+.PHONY: test
+test:
+	@go test -v ./...
+
 # Build the elm app
 .PHONY: elm
 elm:
