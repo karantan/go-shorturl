@@ -29,5 +29,5 @@ func ping(c *gin.Context) {
 
 func main() {
 	r := setupRouter()
-	r.Run(":8080")
+	r.Run()
 }
