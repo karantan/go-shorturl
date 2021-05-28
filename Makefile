@@ -13,4 +13,4 @@ test:
 # Build the elm app
 .PHONY: elm
 elm:
-	@elm make src/Main.elm --output static/elm.js
+	@elm make frontend/Index.elm --output static/index.js
