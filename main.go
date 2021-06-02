@@ -7,13 +7,16 @@ import (
 	"shorturl/db"
 	"shorturl/logger"
 	"shorturl/utils"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 var log = logger.New("main", false)
 
-//go:embed static/*
+//go:embed static/index.html
+//go:embed static/index.js
+//go:embed static/style.css
 var staticFS embed.FS
 
 const (
@@ -26,12 +29,12 @@ func setupRouter() *gin.Engine {
 
 	// Add static assets to binary.
 	// See https://github.com/gin-gonic/examples/tree/master/assets-in-binary
-	// templ := template.Must(template.New("").ParseFS(staticFS, "static/*"))
+	// templ := template.Must(template.New("").ParseFS(staticFS, "static/index.html"))
 	// router.SetHTMLTemplate(templ)
 	// router.StaticFS("/public", http.FS(staticFS))
 
 	// Uncoment this for faster html and css development
-	router.LoadHTMLGlob("static/*")
+	router.LoadHTMLGlob("static/index.html")
 	router.Static("/public/static", "./static")
 
 	router.GET("/", index)
@@ -78,6 +81,9 @@ func create(c *gin.Context) {
 	}
 	msg.Message = "Saved"
 	msg.Status = 200
+
+	// mimic some hard processing
+	time.Sleep(1 * time.Second)
 	c.JSON(http.StatusOK, msg)
 }
 

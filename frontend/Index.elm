@@ -1,6 +1,14 @@
 module Index exposing (Model, Msg(..), init, main, update, view)
 
 import Bootstrap.Alert as Alert
+import Bootstrap.Button as Button
+import Bootstrap.Card as Card
+import Bootstrap.Card.Block as Block
+import Bootstrap.Form as Form
+import Bootstrap.Form.Input as Input
+import Bootstrap.Grid as Grid
+import Bootstrap.Grid.Col as Col
+import Bootstrap.Grid.Row as Row
 import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -107,6 +115,8 @@ update msg model =
                     ( { model
                         | state = Success
                         , serverMessage = serverResponse.message
+                        , url = ""
+                        , prefix = ""
                       }
                     , Cmd.none
                     )
@@ -155,8 +165,11 @@ sendRequest model =
 
 
 formDisabled : Model -> Bool
-formDisabled { state } =
-    if List.member state [ Failure, Success, Init ] then
+formDisabled { state, url } =
+    if url == "" then
+        True
+
+    else if List.member state [ Failure, Success, Init ] then
         False
 
     else
@@ -178,46 +191,45 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    Html.form [ Html.Attributes.class "form-signin" ]
-        [ Html.h1 [] [ text "Go Small URL" ]
-        , Html.div [] [ viewResult model ]
-        , Html.label
-            [ Html.Attributes.for "prefix"
-            , Html.Attributes.class "sr-only"
+    Grid.container []
+        [ Grid.row [] []
+        , Grid.row [ Row.centerXs ]
+            [ Grid.col [ Col.xs4 ]
+                [ Card.config [ Card.outlineSecondary ]
+                    |> Card.headerH4 [] [ text "Go-ShortURL" ]
+                    |> Card.block []
+                        [ Block.titleH4 [] [ viewResult model ]
+                        , Block.custom <|
+                            Form.form []
+                                [ Form.group []
+                                    [ Form.label [ for "prefix" ] [ text "Prefix" ]
+                                    , Input.text
+                                        [ Input.id "prefix"
+                                        , Input.value model.prefix
+                                        , Input.onInput UpdatePrefix
+                                        ]
+                                    , Form.help [] [ text "e.g. sc2" ]
+                                    ]
+                                , Form.group []
+                                    [ Form.label [ for "url" ] [ text "URL" ]
+                                    , Input.text
+                                        [ Input.id "url"
+                                        , Input.value model.url
+                                        , Input.onInput UpdateUrl
+                                        ]
+                                    , Form.help [] [ text "e.g. https://mysite.com/best-article.html" ]
+                                    ]
+                                , Button.button
+                                    [ Button.primary
+                                    , Button.disabled <| formDisabled model
+                                    , Button.onClick SubmitPost
+                                    ]
+                                    [ text "Submit" ]
+                                ]
+                        ]
+                    |> Card.view
+                ]
             ]
-            [ text "Prefix" ]
-        , Html.input
-            [ Html.Attributes.type_ "text"
-            , Html.Attributes.id "prefix"
-            , Html.Attributes.class "form-control"
-            , Html.Attributes.placeholder "Prefix (e.g. sc2)"
-            , onInput UpdatePrefix
-            ]
-            []
-        , Html.label
-            [ Html.Attributes.for "url"
-            , Html.Attributes.class "sr-only"
-            ]
-            [ text "URL" ]
-        , Html.input
-            [ Html.Attributes.type_ "text"
-            , Html.Attributes.id "url"
-            , Html.Attributes.class "form-control"
-            , Html.Attributes.placeholder "URL (e.g. https://google.com)"
-            , Html.Attributes.required True
-            , onInput UpdateUrl
-            ]
-            []
-        , Html.button
-            [ Html.Attributes.class "btn"
-            , Html.Attributes.class "btn-lg"
-            , Html.Attributes.class "btn-primary"
-            , Html.Attributes.class "btn-block"
-            , Html.Attributes.type_ "button"
-            , Html.Attributes.disabled <| formDisabled model
-            , Html.Events.onClick SubmitPost
-            ]
-            [ text "Submit" ]
         ]
 
 
@@ -231,14 +243,10 @@ viewResult model =
             Alert.simpleDanger [] [ text model.serverMessage ]
 
         Loading ->
-            div []
-                [ p []
-                    [ Loading.render
-                        DoubleBounce
-                        { defaultConfig | color = "#333" }
-                        Loading.On
-                    ]
-                ]
+            Loading.render
+                Circle
+                { defaultConfig | color = "#333" }
+                Loading.On
 
         Success ->
             Alert.simpleSuccess [] [ text model.serverMessage ]
